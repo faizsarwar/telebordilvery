@@ -106,17 +106,21 @@ app.post("/webhook",express.json(),(request,response)=>{          //fulfillment 
       
         function input_existingcard(agent){
         const password = agent.parameters.password;
+        let pcounter=0;
        return getCustomerCreditData().then(res => {
           res.data.map(person => {
           if(person.Password == password){
                   agent.add(`payment is successful. Click /here to return to the main menu.`);
                   agent.add('click /Receipt to see reciept')
                   // getReceipt()
+                  pcounter=1
                 }
-          else{
-                agent.add("You've entered wrong passoword please try again ")
-            }
             });
+          if(pcounter==0){
+            agent.add("Password was incorrect Please try again ")
+            agent.add(new Suggestion("Execisting Card"))
+            agent.add(new Suggestion("New Card"))
+          }
         });
       }
 
