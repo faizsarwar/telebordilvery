@@ -20,6 +20,7 @@ app.get("/",(req,res)=>{
 let TotalOrders =[]
 let TotalPrice=[0]
 let TimechoosenForOrder=[""]
+let customerDetails=[]
 
 
 app.post("/webhook",express.json(),(request,response)=>{          //fulfillment mai bhi url mai /webhook lagana huga 
@@ -47,8 +48,11 @@ app.post("/webhook",express.json(),(request,response)=>{          //fulfillment 
           Password: password
         }];
         axios.post('https://sheet.best/api/sheets/3828b8ab-947c-47e1-a80f-47d56e02c340', data);
+        customerDetails.push(name)
+        customerDetails.push(phone)
         agent.add(`Your account has been created!`);
         agent.add(`Click /here to order with us!`);
+
       }
 
       
@@ -59,8 +63,10 @@ app.post("/webhook",express.json(),(request,response)=>{          //fulfillment 
        return getCustomerData().then(res => {
           res.data.map(person => {
           if(person.Password == password && person.Email == email){
+                  console.log(person)
+                  customerDetails.push(person.Name)
+                  customerDetails.push(person.Phone)
                   agent.add(`Welcome back ${person.Name}, click /here to order with us!`);
-                  
                     }
             });
         });
@@ -147,6 +153,7 @@ app.post("/webhook",express.json(),(request,response)=>{          //fulfillment 
           TotalOrders.push(order)
   
           console.log("order is this ",TotalOrders)
+          agent.add("your order is placed successfully !!")
           agent.add(new Suggestion('Pick Up scheduling'))
           agent.add(new Suggestion('Order'))
         }
@@ -175,9 +182,16 @@ app.post("/webhook",express.json(),(request,response)=>{          //fulfillment 
         deliveryTime=TimechoosenForOrder.pop()
         TimechoosenForOrder=[""]
         
-        word+=`\n Dilevery Time : ${deliveryTime}`
+        word+=`\n Dilevery Time is ${deliveryTime}`
 
         TotalPrice.push(totalPrice)
+
+        let customerPhone=customerDetails.pop();
+        let customerName=customerDetails.pop();
+
+        word+=`\n Customer Name is : ${customerName} `
+
+        word+=`\n Customer Phone number  is : ${customerPhone} `
 
         axios.post('https://telegramapi-bot.herokuapp.com/message',{
           data:word
